@@ -4,31 +4,34 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Expense Tracker</title>
-        <link rel="stylesheet" href="/public/styles/style.css">
+        <link rel="stylesheet" href="/styles/main.css">
     </head>
     <body>
         <div class="container">
-            <h1>Expense Form</h1>
+            <h1>Add a New Expense</h1>
 
-            <form action="/add-expense" method="POST">
-                <label>Amount</label>
-                <input type="number" name="amount" required>
-
-                <label>Category</label>
-                <select name="category" required>
-                    <option value="">Select a category</option>
-                    <option value="Food">Food</option>
-                    <option value="Rent">Rent</option>
-                    <option value="Entertainment">Entertainment</option>
-                    <option value="Transport">Transportation</option>
-                    <option value="Income">Income</option>
-                </select>
-
-                <label>Date</label>
-                <input type="date" name="date" required>
-
-                <button type="submit">Submit Expenses</button>
-            </form>
+            <div class="expenseform">
+                <form action="/add-expense" method="POST">
+                    <label>Amount</label>
+                    <input type="text" id="amount" name="amount" required>
+            
+                    <label>Category</label>
+                    <select name="category" required>
+                        <option value="">Select a category</option>
+                        <option value="Food">Food</option>
+                        <option value="Rent">Rent</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Transport">Transportation</option>
+                        <option value="Income">Income</option>
+                    </select>
+            
+                    <label>Date</label>
+                    <input type="date" name="date" required>
+            
+                    <button type="submit">Submit Expenses</button>
+                </form>
+            </div>
+            
         </div>
         
     </body>
