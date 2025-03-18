@@ -3,14 +3,12 @@ const { Client } = require('pg');
 const bodyParser = require('body-parser');
 const db = require("./db");
 
-// Initialize the Express app
 const app = express();
 const port = 3000;
 
 app.set('view engine', 'ejs');
 
-// Middleware
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: true })); 
 app.use(bodyParser.json()); 
 
 app.get('/', (req, res) => {
