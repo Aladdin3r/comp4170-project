@@ -20,7 +20,7 @@ app.get("/", async (req, res) => {
             "SELECT expenses.id, expenses.amount, categories.name AS category, expenses.date FROM expenses JOIN categories ON expenses.category_id = categories.id ORDER BY date DESC"
         );
 
-        res.render("index.js", { categories: categoriesResult.rows, expenses: expensesResult.rows });
+        res.render("index", { categories: categoriesResult.rows, expenses: expensesResult.rows });
     } catch (err) {
         console.error(err);
         res.send("Error fetching data");
