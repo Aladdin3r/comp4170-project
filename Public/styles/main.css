@@ -1,0 +1,70 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    text-align: center;
+    padding: 20px;
+}
+
+.container {
+    background: white;
+    max-width: 600px;
+    margin: auto;
+    padding: 50px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.1);
+}
+
+.container h1 {
+    margin: 0px 0px 20px 0px;
+}
+.expenseform {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.expenseform label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    text-align: left;
+    width: 300px;
+}
+
+.expenseform form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 300px;
+}
+
+.expenseform label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 0px;
+    text-align: left;
+    width: 100%;
+}
+
+.expenseform input,
+.expenseform select,
+.expenseform button {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.expenseform button {
+    background-color: #303030;
+    color: white;
+    border: none;
+    cursor: pointer;
+    width: 300px;
+}
+
+.expenseform button:hover {
+    background-color: #454545;
+}
