@@ -12,3 +12,7 @@ app.set('view engine', 'ejs');
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true })); // For parsing URL-encoded data
 app.use(bodyParser.json()); // For parsing JSON data
+
+app.listen(port, () => {
+    console.log(`App listening at port ${port}`);
+  });
