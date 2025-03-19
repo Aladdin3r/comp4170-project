@@ -1,61 +1,135 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Expense Tracker</title>
-        <link rel="stylesheet" href="/styles/main.css">
-    </head>
-    <body>
-        <div class="container">
-            <h1>Add a New Expense</h1>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Expense Tracker</title>
+		<link rel="stylesheet" href="/styles/main.css" />
+		<script>
+			async function fetchTransactions(type) {
+				let url = "/transactions/" + type;
 
-            <div class="expenseform">
-                <form action="/add" method="POST">
-                    <div class="form-control">
-                        <label>Amount</label>
-                        <input type="text" id="amount" name="amount" required>
-                    </div>
-                    
-                    <div class="form-control">
-                        <label>Category</label>
-                        <select name="category_id" required>
-                            <option value="">Select a category</option>
-                            <% categories.forEach(category => { %>
-                                <option value="<%= category.id %>"><%= category.name %></option>
-                            <% }); %>
-                        </select>
-                    </div>
-            
-                    <div class="form-control">
-                        <label>Date</label>
-                        <input type="date" name="date" required>
-                    </div>
-            
-                    <button type="submit">Submit Expenses</button>
-                </form>
-            </div>
-            <div class="table">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Amount</th>
-                            <th>Category</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% expenses.forEach(expense => { %>
-                            <tr>
-                                <td>$<%= expense.amount %></td>
-                                <td><%= expense.category %></td>
-                                <td><%= new Date(expense.date).toISOString().split('T')[0] %></td>
-                            </tr>
-                        <% }); %>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-    </body>
+				// Handle Custom Month Selection
+				if (type === "custom") {
+					let selectedMonth = document.getElementById("customMonth").value;
+					if (!selectedMonth) return; // Do nothing if no month selected
+
+					let [year, month] = selectedMonth.split("-");
+					url += `?year=${year}&month=${month}`;
+				}
+
+				try {
+					let response = await fetch(url);
+					let data = await response.json();
+
+					// Update transaction list
+					let transactionsList = document.getElementById("transactionsList");
+					transactionsList.innerHTML = ""; // Clear previous transactions
+
+					if (data.length === 0) {
+						transactionsList.innerHTML = "<li>No transactions found.</li>"; // Show message if empty
+						return;
+					}
+
+					data.forEach((tx) => {
+						let li = document.createElement("li");
+						li.style.color = tx.category === "Income" ? "green" : "red"; // ✅ Correct check
+						li.innerHTML = `${tx.date} - ${tx.category}: 
+                            <strong>${
+															tx.category === "Income" ? "+" : ""
+														}$${Math.abs(tx.amount)}</strong>`;
+						transactionsList.appendChild(li);
+					});
+				} catch (error) {
+					console.error("Error fetching transactions:", error);
+				}
+			}
+		</script>
+	</head>
+	<body>
+		<div class="container">
+			<h1>Add a New Expense</h1>
+
+			<div class="expenseform">
+				<form action="/add" method="POST">
+					<div class="form-control">
+						<label>Amount</label>
+						<input type="text" id="amount" name="amount" required />
+					</div>
+
+					<div class="form-control">
+						<label>Category</label>
+						<select name="category_id" required>
+							<option value="">Select a category</option>
+							<% categories.forEach(category => { %>
+							<option value="<%= category.id %>"><%= category.name %></option>
+							<% }); %>
+						</select>
+					</div>
+
+					<div class="form-control">
+						<label>Date</label>
+						<input type="date" name="date" required />
+					</div>
+
+					<button type="submit">Submit Expenses</button>
+				</form>
+			</div>
+			<div class="table">
+				<table>
+					<thead>
+						<tr>
+							<th>Amount</th>
+							<th>Category</th>
+							<th>Date</th>
+						</tr>
+					</thead>
+					<tbody>
+						<% expenses.forEach(expense => { %>
+						<tr>
+							<td>
+								<span
+									style="color: <%= expense.amount >= 0 ? 'green' : 'red' %>;"
+								>
+									<%= expense.amount >= 0 ? '+' : '' %>$<%=
+									Math.abs(expense.amount) %>
+								</span>
+							</td>
+
+							<td><%= expense.category %></td>
+							<td><%= expense.date %></td>
+						</tr>
+						<% }); %>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div>
+			<div>
+				<button onclick="fetchTransactions('recent')">
+					Recent Transactions
+				</button>
+				<button onclick="fetchTransactions('month')">This Month</button>
+				<input
+					type="month"
+					id="customMonth"
+					onchange="fetchTransactions('custom')"
+				/>
+			</div>
+
+			<ul id="transactionsList">
+				<% expenses.forEach(expense => { %>
+				<li>
+					<%= expense.date %> - <%= expense.category %>:
+					<strong
+						style="color: <%= expense.category === 'Income' ? 'green' : 'red' %>;"
+					>
+						<%= expense.category === 'Income' ? '+' : '' %>$<%=
+						Math.abs(expense.amount) %>
+					</strong>
+				</li>
+				<% }) %>
+			</ul>
+		</div>
+	</body>
 </html>
