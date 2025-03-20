@@ -6,26 +6,37 @@ body {
 }
 
 .container {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
     background: white;
-    max-width: 600px;
+    max-width: 90%;
     margin: auto;
-    padding: 50px;
+    padding: 15px;
+    gap: 15px;
     border-radius: 8px;
     box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.1);
 }
 
-.container h1 {
-    margin: 0px 0px 20px 0px;
-    display: block;
-    font-weight: bold;
-    font-size: 24px;
-}
 .expenseform {
+    border-style: solid;
+    border-color: #e9e9e9;
+    border-radius: 10px;
+    width: 30%;
+    height: 400px;
+    padding: 0px 20px 0px 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
+.expenseform h1 {
+    margin: 20px 0px 20px 0px;
+    justify-content: left;
+    display: block;
+    font-weight: bold;
+    font-size: 24px;
+}
 .expenseform label {
     display: block;
     font-weight: bold;
@@ -74,8 +85,67 @@ body {
     transform: scale(1.05);
 }
 
+.tablecontainer {
+    background: white;
+    width: 70%;
+    min-height: 400px; 
+    margin: 0;
+    font-family: "Courier New", Courier, monospace;
+    border-style: solid;
+    border-color: #e9e9e9;
+    border-radius: 10px;
+    overflow-x: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
 
+.tablecontainer table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
 
+.tablecontainer th {
+    background: #303030;
+    color: white;
+    padding: 12px;
+    text-transform: uppercase;
+}
+
+.tablecontainer td {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+.tablecontainer tr:nth-child(even) {
+    background: #f9f9f9;
+}
+
+.tablecontainer tr:hover {
+    background: #f0f0f0;
+    transition: 0.3s ease;
+}
+
+.tablecontainer span {
+    font-weight: bold;
+}
+
+.tablecontainer .positive {
+    color: green;
+}
+
+.tablecontainer .negative {
+    color: red;
+}
+
+.tablecontainer .filtercontainer {
+    width: 100%;
+    background-color: #303030;
+    padding: 10px;
+    color: white;
+}
 .recent-button,
 .month-button {
     background-color: #303030; 
