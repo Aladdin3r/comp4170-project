@@ -131,7 +131,6 @@ app.listen(port, () => {
 });
 
 
-//custom budget comparisson
 
 app.get('/budget/comparison', async (req, res) => {
     try {
@@ -143,7 +142,6 @@ app.get('/budget/comparison', async (req, res) => {
             "SELECT COALESCE(SUM(amount * -1), 0) AS total_expense FROM expenses WHERE amount < 0"
         );
 
-        // Log the extracted values to confirm they exist
         console.log("Extracted Income:", incomeResult.rows[0]);
         console.log("Extracted Expense:", expenseResult.rows[0]);
 
@@ -153,7 +151,7 @@ app.get('/budget/comparison', async (req, res) => {
 
         res.json({
             totalIncome,
-            totalExpense, // This should now be properly defined
+            totalExpense, 
             balance
         });
     } catch (err) {
