@@ -105,11 +105,11 @@
 			</div>
 		</div>
 		<div>
-			<div>
-				<button onclick="fetchTransactions('recent')">
+			<div class="r-transactions" class="button-container">
+				<button class="recent-button" onclick="fetchTransactions('recent')">
 					Recent Transactions
 				</button>
-				<button onclick="fetchTransactions('month')">This Month</button>
+				<button class="month-button" onclick="fetchTransactions('month')">This Month</button>
 				<input
 					type="month"
 					id="customMonth"
@@ -117,7 +117,7 @@
 				/>
 			</div>
 
-			<ul id="transactionsList">
+			<ul class="transactionsList" id="transactionsList">
 				<% expenses.forEach(expense => { %>
 				<li>
 					<%= expense.date %> - <%= expense.category %>:

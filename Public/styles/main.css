@@ -71,4 +71,64 @@ body {
 
 .expenseform button:hover {
     background-color: #454545;
+    transform: scale(1.05);
+}
+
+
+
+.recent-button,
+.month-button {
+    background-color: #303030; 
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    text-align: center;
+}
+
+.recent-button:hover,
+.month-button:hover {
+    background-color: #454545;
+    transform: scale(1.05); 
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px; 
+    margin-top: 15px;
+}
+
+#customMonth {
+    appearance: none; 
+    background-color: #303030; 
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    text-align: center;
+    width: auto;
+}
+
+#customMonth:hover {
+    background-color: #303030;
+    transform: scale(1.05);
+}
+
+#customMonth::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+.transactionsList{
+    background: white;
+    max-width: 600px;
+    margin: auto;
+    padding: 50px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.1);
 }
