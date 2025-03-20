@@ -44,6 +44,27 @@
 					console.error("Error fetching transactions:", error);
 				}
 			}
+
+			async function fetchBudgetComparison() {
+			try {
+				let response = await fetch("/budget/comparison");
+				let data = await response.json();
+				console.log("Received Budget Data:", data); 
+
+				document.getElementById("totalIncome").textContent = `$${data.totalIncome ?? 0}`;
+				document.getElementById("totalExpenses").textContent = `$${data.totalExpense ?? 0}`;
+				document.getElementById("balance").textContent = `$${data.balance ?? 0}`;
+
+				let message = data.balance >= 0 
+					? "🎉 Good Job! You're managing your budget well!"
+					: "😈 You are naughty! Your expenses are too high!";
+				document.getElementById("budgetMessage").textContent = message;
+				} catch (error) {
+					console.error("Error fetching budget comparison:", error);
+				}
+			}
+
+			document.addEventListener("DOMContentLoaded", fetchBudgetComparison);
 		</script>
 	</head>
 	<body>
@@ -131,5 +152,14 @@
 				<% }) %>
 			</ul>
 		</div>
+
+		<div class="budget-container">
+			<h2>TOTAL SUMMARY</h2>
+			<p><strong>Total Income:</strong> <span id="totalIncome">$0</span></p>
+			<p><strong>Total Expenses:</strong> <span id="totalExpenses">$0</span></p>
+			<p><strong>Balance:</strong> <span id="balance">$0</span></p>
+			<p id="budgetMessage"></p>
+		</div>
+		
 	</body>
 </html>

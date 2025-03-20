@@ -128,7 +128,87 @@ body {
     background: white;
     max-width: 600px;
     margin: auto;
-    padding: 50px;
+    padding: 20px;
     border-radius: 8px;
-    box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    font-family: "Courier New", Courier, monospace;
+    border: 2px dashed #ccc;
+    text-align: left;
+}
+
+#transactionsList li {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px dotted #ccc; 
+    padding: 5px 0;
+    font-size: 14px;
+}
+
+#transactionsList .receipt-date {
+    flex: 1;
+    text-align: left;
+}
+
+#transactionsList .receipt-category {
+    flex: 1;
+    text-align: center;
+    font-weight: bold;
+}
+
+#transactionsList .receipt-amount {
+    flex: 1;
+    text-align: right;
+    font-weight: bold;
+}
+
+
+.budget-container {
+    background: white;
+    max-width: 400px;
+    margin: 20px auto;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    font-family: "Courier New", Courier, monospace; 
+    border: 2px dashed #ccc;
+    text-align: left;
+}
+
+.budget-container h2 {
+    text-align: center;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.budget-container p {
+    display: flex;
+    justify-content: space-between;
+    margin: 5px 0;
+    padding: 5px 0;
+    border-bottom: 1px dotted #ccc; 
+}
+
+.budget-container p:last-child {
+    border-bottom: none;
+}
+
+
+#totalIncome {
+    color: green;
+}
+
+#totalExpenses {
+    color: red;
+}
+
+#balance {
+    font-weight: bold;
+    color: #454545
+ }
+
+#budgetMessage {
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 15px;
+    text-align: center;
 }
