@@ -28,11 +28,14 @@ app.get("/", async (req, res) => {
 		);
 
 		// Fetch budgets for each category and calculate remaining budget
-		const budgetsResult = await db.query(
-			`SELECT budgets.id, budgets.amount, categories.name AS category 
-      FROM budgets 
-      JOIN categories ON budgets.category_id = categories.id`
-		);
+		const budgetsResult = await db.query(`
+      SELECT b.id, b.amount AS budget, c.name AS category, 
+          COALESCE(SUM(e.amount), 0) AS spent
+      FROM budgets b
+      JOIN categories c ON b.category_id = c.id
+      LEFT JOIN expenses e ON e.category_id = b.category_id
+      GROUP BY b.id, b.amount, c.name
+      `);
 
 		// Calculate total expenses per category
 		const totalExpensesPerCategory = expensesResult.rows.reduce(
@@ -48,12 +51,14 @@ app.get("/", async (req, res) => {
 
 		// Calculate the remaining budget for each category
 		const budgets = budgetsResult.rows.map((budget) => {
-			const totalExpense = totalExpensesPerCategory[budget.category] || 0;
-			const remainingBudget = budget.amount - totalExpense;
+			const totalExpense = Number(budget.spent) || 0;
+			const remainingBudget = Number(budget.budget) - totalExpense;
 			return {
 				...budget,
-				totalExpense: totalExpense,
-				remainingBudget: remainingBudget,
+				spent: totalExpense.toFixed(2),
+				remainingBudget: isNaN(remainingBudget)
+					? "N/A"
+					: remainingBudget.toFixed(2), // To prevent NaN
 			};
 		});
 
@@ -77,19 +82,21 @@ app.post("/add", async (req, res) => {
 	try {
 		const { amount, category_id, date } = req.body;
 
-    const categoryResult = await db.query(
-      "SELECT name FROM categories WHERE id = $1",
-      [category_id]
-    );
-    const categoryName = categoryResult.rows[0]?.name || "Unknown";
+		const categoryResult = await db.query(
+			"SELECT name FROM categories WHERE id = $1",
+			[category_id]
+		);
+		const categoryName = categoryResult.rows[0]?.name || "Unknown";
 
-    // Log if it's an Income or Expense
-    if (categoryName === "Income") {
-        console.log(`Income logged: +$${amount} on ${date}`);
-    } else {
-        console.log(`Expense logged: -$${amount} on ${date} (Category: ${categoryName})`);
-    }
-    
+		// Log if it's an Income or Expense
+		if (categoryName === "Income") {
+			console.log(`Income logged: +$${amount} on ${date}`);
+		} else {
+			console.log(
+				`Expense logged: -$${amount} on ${date} (Category: ${categoryName})`
+			);
+		}
+
 		await db.query(
 			"INSERT INTO expenses (amount, category_id, date) VALUES ($1, $2, $3)",
 			[amount, category_id, date]
@@ -154,7 +161,37 @@ app.post("/budget", async (req, res) => {
 	}
 });
 
-// FILTERING 
+// FILTERING BUDGET
+app.get("/budget/filter", async (req, res) => {
+  try {
+      const { year, month } = req.query;
+      if (!year || !month) return res.status(400).send("Year and Month are required");
+
+      const result = await db.query(
+          `
+          SELECT b.id, b.amount AS budget, c.name AS category, 
+              COALESCE(SUM(e.amount), 0) AS spent, 
+              (b.amount - COALESCE(SUM(e.amount), 0)) AS remaining
+          FROM budgets b
+          JOIN categories c ON b.category_id = c.id
+          LEFT JOIN expenses e ON b.category_id = e.category_id 
+              AND EXTRACT(YEAR FROM e.date) = $1 
+              AND EXTRACT(MONTH FROM e.date) = $2
+          GROUP BY b.id, c.name
+          ORDER BY c.name;
+          `,
+          [year, month]
+      );
+
+      res.json(result.rows);
+  } catch (err) {
+      console.error(err);
+      res.status(500).send("Error fetching budget");
+  }
+});
+
+
+// FILTERING EXPENSES
 app.get("/transactions/filter", async (req, res) => {
 	try {
 		const { category, year, month, timeframe, order } = req.query;
