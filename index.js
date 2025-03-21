@@ -76,6 +76,20 @@ app.get("/", async (req, res) => {
 app.post("/add", async (req, res) => {
 	try {
 		const { amount, category_id, date } = req.body;
+
+    const categoryResult = await db.query(
+      "SELECT name FROM categories WHERE id = $1",
+      [category_id]
+    );
+    const categoryName = categoryResult.rows[0]?.name || "Unknown";
+
+    // Log if it's an Income or Expense
+    if (categoryName === "Income") {
+        console.log(`Income logged: +$${amount} on ${date}`);
+    } else {
+        console.log(`Expense logged: -$${amount} on ${date} (Category: ${categoryName})`);
+    }
+    
 		await db.query(
 			"INSERT INTO expenses (amount, category_id, date) VALUES ($1, $2, $3)",
 			[amount, category_id, date]

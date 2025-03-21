@@ -107,7 +107,14 @@
                 </div>
                 <div class="form-control">
                     <label>Date</label>
-                    <input type="date" name="date" required />
+                    <input type="date" name="date" id="expenseDate" required />
+                    <!-- default to today's date -->
+                    <script>
+                        document.addEventListener("DOMContentLoaded", function () {
+                            let today = new Date().toISOString().split("T")[0];
+                            document.getElementById("expenseDate").value = today;
+                        });
+                        </script>
                 </div>
                 <button type="submit">Submit Expense</button>
             </form>
