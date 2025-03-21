@@ -1,136 +1,157 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Expense Tracker</title>
-		<link rel="stylesheet" href="/styles/main.css" />
-		<script>
-			async function fetchTransactions(type) {
-				let url = "/transactions/" + type;
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Expense Tracker</title>
+    <link rel="stylesheet" href="/styles/main.css" />
+    <script>
+        async function fetchBudgetComparison() {
+            try {
+                let response = await fetch("/budget/comparison");
+                let data = await response.json();
+                document.getElementById("totalIncome").textContent = `$${data.totalIncome ?? 0}`;
+                document.getElementById("totalExpenses").textContent = `$${data.totalExpense ?? 0}`;
+                document.getElementById("balance").textContent = `$${data.balance ?? 0}`;
 
-				// Handle Custom Month Selection
-				if (type === "custom") {
-					let selectedMonth = document.getElementById("customMonth").value;
-					if (!selectedMonth) return; // Do nothing if no month selected
+                let message = data.balance >= 0 
+                    ? "🎉 Good Job! You're managing your budget well!"
+                    : "😈 Your expenses are too high!";
+                document.getElementById("budgetMessage").textContent = message;
+            } catch (error) {
+                console.error("Error fetching budget comparison:", error);
+            }
+        }
 
-					let [year, month] = selectedMonth.split("-");
-					url += `?year=${year}&month=${month}`;
-				}
+        function filterTable() {
+            let categoryFilter = document.getElementById("filterCategory").value;
+            let dateFilter = document.getElementById("filterDate").value;
+            let monthFilter = document.getElementById("filterMonth").value;
 
-				try {
-					let response = await fetch(url);
-					let data = await response.json();
+            let rows = document.querySelectorAll(".tablecontainer tbody tr");
+            let transactions = [];
 
-					// Update transaction list
-					let transactionsList = document.getElementById("transactionsList");
-					transactionsList.innerHTML = ""; // Clear previous transactions
+            rows.forEach(row => {
+                let amount = row.querySelector("td:nth-child(1)").textContent.trim();
+                let category = row.querySelector("td:nth-child(2)").textContent.trim();
+                let date = row.querySelector("td:nth-child(3)").textContent.trim();
 
-					if (data.length === 0) {
-						transactionsList.innerHTML = "<li>No transactions found.</li>"; // Show message if empty
-						return;
-					}
+                let parsedDate = new Date(date);
+                if (isNaN(parsedDate)) return;
 
-					data.forEach((tx) => {
-						let li = document.createElement("li");
-						li.style.color = tx.category === "Income" ? "green" : "red"; // ✅ Correct check
-						li.innerHTML = `${tx.date} - ${tx.category}: 
-                            <strong>${
-															tx.category === "Income" ? "+" : ""
-														}$${Math.abs(tx.amount)}</strong>`;
-						transactionsList.appendChild(li);
-					});
-				} catch (error) {
-					console.error("Error fetching transactions:", error);
-				}
-			}
-		</script>
-	</head>
-	<body>
-		<div class="container">
-			<h1>Add a New Expense</h1>
+                transactions.push({ row, amount, category, date: parsedDate });
+            });
 
-			<div class="expenseform">
-				<form action="/add" method="POST">
-					<div class="form-control">
-						<label>Amount</label>
-						<input type="text" id="amount" name="amount" required />
-					</div>
+            if (categoryFilter) {
+                transactions = transactions.filter(tx => tx.category === categoryFilter);
+            }
 
-					<div class="form-control">
-						<label>Category</label>
-						<select name="category_id" required>
-							<option value="">Select a category</option>
-							<% categories.forEach(category => { %>
-							<option value="<%= category.id %>"><%= category.name %></option>
-							<% }); %>
-						</select>
-					</div>
+            if (monthFilter) {
+                let [year, month] = monthFilter.split("-");
+                transactions = transactions.filter(tx => 
+                    tx.date.getFullYear() === parseInt(year) && (tx.date.getMonth() + 1) === parseInt(month)
+                );
+            }
 
-					<div class="form-control">
-						<label>Date</label>
-						<input type="date" name="date" required />
-					</div>
+            transactions.sort((a, b) => dateFilter === "latest" ? b.date - a.date : a.date - b.date);
 
-					<button type="submit">Submit Expenses</button>
-				</form>
-			</div>
-			<div class="table">
-				<table>
-					<thead>
-						<tr>
-							<th>Amount</th>
-							<th>Category</th>
-							<th>Date</th>
-						</tr>
-					</thead>
-					<tbody>
-						<% expenses.forEach(expense => { %>
-						<tr>
-							<td>
-								<span
-									style="color: <%= expense.amount >= 0 ? 'green' : 'red' %>;"
-								>
-									<%= expense.amount >= 0 ? '+' : '' %>$<%=
-									Math.abs(expense.amount) %>
-								</span>
-							</td>
+            rows.forEach(row => row.style.display = "none");
+            transactions.forEach(tx => tx.row.style.display = "table-row");
+        }
 
-							<td><%= expense.category %></td>
-							<td><%= expense.date %></td>
-						</tr>
-						<% }); %>
-					</tbody>
-				</table>
-			</div>
-		</div>
-		<div>
-			<div>
-				<button onclick="fetchTransactions('recent')">
-					Recent Transactions
-				</button>
-				<button onclick="fetchTransactions('month')">This Month</button>
-				<input
-					type="month"
-					id="customMonth"
-					onchange="fetchTransactions('custom')"
-				/>
-			</div>
+        function resetFilters() {
+            document.getElementById("filterCategory").value = "";
+            document.getElementById("filterDate").value = "latest";
+            document.getElementById("filterMonth").value = "";
+            filterTable();
+        }
 
-			<ul id="transactionsList">
-				<% expenses.forEach(expense => { %>
-				<li>
-					<%= expense.date %> - <%= expense.category %>:
-					<strong
-						style="color: <%= expense.category === 'Income' ? 'green' : 'red' %>;"
-					>
-						<%= expense.category === 'Income' ? '+' : '' %>$<%=
-						Math.abs(expense.amount) %>
-					</strong>
-				</li>
-				<% }) %>
-			</ul>
-		</div>
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchBudgetComparison();
+            filterTable();
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="expenseform">
+            <h1>Add a New Expense</h1>
+            <form action="/add" method="POST">
+                <div class="form-control">
+                    <label>Amount</label>
+                    <input type="text" id="amount" name="amount" required />
+                </div>
+                <div class="form-control">
+                    <label>Category</label>
+                    <select name="category_id" required>
+                        <option value="">Select a category</option>
+                        <% categories.forEach(category => { %>
+                        <option value="<%= category.id %>"><%= category.name %></option>
+                        <% }); %>
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label>Date</label>
+                    <input type="date" name="date" required />
+                </div>
+                <button type="submit">Submit Expense</button>
+            </form>
+        </div>
+
+        <div class="tablecontainer">
+            <div class="filtercontainer">
+                <label for="filterCategory">Category:</label>
+                <select id="filterCategory" onchange="filterTable()">
+                    <option value="">All</option>
+                    <% categories.forEach(category => { %>
+                        <option value="<%= category.name %>"><%= category.name %></option>
+                    <% }); %>
+                </select>
+
+                <label for="filterDate">Sort by Date:</label>
+                <select id="filterDate" onchange="filterTable()">
+                    <option value="latest">Latest First</option>
+                    <option value="oldest">Oldest First</option>
+                </select>
+
+                <label for="filterMonth">Month/Year:</label>
+                <input type="month" id="filterMonth" onchange="filterTable()" />
+
+                <button onclick="resetFilters()">Reset</button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Amount</th>
+                        <th>Category</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% expenses.forEach(expense => { %>
+                    <tr>
+                        <td>
+                            <span style="color: <%= expense.amount >= 0 ? 'green' : 'red' %>;">
+                                <%= expense.amount >= 0 ? '+' : '' %>$<%= Math.abs(expense.amount) %>
+                            </span>
+                        </td>
+                        <td><%= expense.category %></td>
+                        <td><%= expense.date %></td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="budget-container">
+        <h2>TOTAL SUMMARY</h2>
+        <p><strong>Total Income:</strong> <span id="totalIncome">$0</span></p>
+        <p><strong>Total Expenses:</strong> <span id="totalExpenses">$0</span></p>
+        <p><strong>Balance:</strong> <span id="balance">$0</span></p>
+        <p id="budgetMessage"></p>
+    </div>
 
 		<div class="container">
 			<h1>Set Your Budget</h1>
@@ -181,5 +202,5 @@
 		  
 
 		</div>
-	</body>
+</body>
 </html>

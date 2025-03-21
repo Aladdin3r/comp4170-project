@@ -220,3 +220,33 @@ app.get("/transactions/custom", async (req, res) => {
 app.listen(port, () => {
   console.log(`App listening at port ${port}`);
 });
+
+
+
+app.get('/budget/comparison', async (req, res) => {
+    try {
+        const incomeResult = await db.query(
+            "SELECT COALESCE(SUM(amount), 0) AS total_income FROM expenses WHERE amount > 0"
+        );
+
+        const expenseResult = await db.query(
+            "SELECT COALESCE(SUM(amount * -1), 0) AS total_expense FROM expenses WHERE amount < 0"
+        );
+
+        console.log("Extracted Income:", incomeResult.rows[0]);
+        console.log("Extracted Expense:", expenseResult.rows[0]);
+
+        const totalIncome = incomeResult.rows[0]?.total_income || 0;
+        const totalExpense = expenseResult.rows[0]?.total_expense || 0;
+        const balance = totalIncome - totalExpense;
+
+        res.json({
+            totalIncome,
+            totalExpense, 
+            balance
+        });
+    } catch (err) {
+        console.error("Error fetching budget comparison:", err);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
