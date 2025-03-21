@@ -131,5 +131,55 @@
 				<% }) %>
 			</ul>
 		</div>
+
+		<div class="container">
+			<h1>Set Your Budget</h1>
+			<form action="/budget" method="POST">
+				<div class="form-control">
+					<label>Amount</label>
+					<input type="text" name="amount" required>
+				</div>
+	
+				<div class="form-control">
+					<label>Category</label>
+					<select name="category_id" required>
+						<option value="">Select a category</option>
+						<% categories.forEach(category => { %>
+							<option value="<%= category.id %>"><%= category.name %></option>
+						<% }) %>
+					</select>
+				</div>
+	
+				<!-- <div class="form-control">
+					<label>Month</label>
+					<input type="month" name="month" required>
+				</div> -->
+	
+				<button type="submit">Set Budget</button>
+			</form>
+		</div>
+	
+		<div class="container">
+			<h1>Budget Breakdown</h1>
+				<table>
+				<tr>
+					<th>Category</th>
+					<th>Budget</th>
+					<th>Spent</th>
+					<th>Remaining</th>
+				</tr>
+				<% budgets.forEach(budget => { %>
+					<tr>
+					<td><%= budget.category %></td>
+					<td><%= budget.amount %></td>
+					<td><%= budget.totalExpense %></td>
+					<td><%= budget.remainingBudget %></td>
+					</tr>
+				<% }); %>
+				</table>
+		  </div>
+		  
+
+		</div>
 	</body>
 </html>
