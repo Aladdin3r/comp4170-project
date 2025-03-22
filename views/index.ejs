@@ -23,53 +23,112 @@
             }
         }
 
-        function filterTable() {
-            let categoryFilter = document.getElementById("filterCategory").value;
-            let dateFilter = document.getElementById("filterDate").value;
-            let monthFilter = document.getElementById("filterMonth").value;
+        async function fetchFilteredTransactions() {
+            let category = document.getElementById("filterCategory").value;
+            let order = document.getElementById("filterDate").value;
+            let selectedMonth = document.getElementById("filterMonth").value;
+            let timeframe = document.getElementById("filterTimeframe").value;
 
-            let rows = document.querySelectorAll(".tablecontainer tbody tr");
-            let transactions = [];
+            let url = "/transactions/filter?";
 
-            rows.forEach(row => {
-                let amount = row.querySelector("td:nth-child(1)").textContent.trim();
-                let category = row.querySelector("td:nth-child(2)").textContent.trim();
-                let date = row.querySelector("td:nth-child(3)").textContent.trim();
-
-                let parsedDate = new Date(date);
-                if (isNaN(parsedDate)) return;
-
-                transactions.push({ row, amount, category, date: parsedDate });
-            });
-
-            if (categoryFilter) {
-                transactions = transactions.filter(tx => tx.category === categoryFilter);
+            if (timeframe) url += `timeframe=${timeframe}&`;
+            if (category) url += `category=${category}&`;
+            if (selectedMonth) {
+                const [year, month] = selectedMonth.split("-");
+                url += `year=${year}&month=${month}&`;
             }
+            url += `order=${order}`;
 
-            if (monthFilter) {
-                let [year, month] = monthFilter.split("-");
-                transactions = transactions.filter(tx => 
-                    tx.date.getFullYear() === parseInt(year) && (tx.date.getMonth() + 1) === parseInt(month)
-                );
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+
+                const tbody = document.getElementById("transactionsList");
+                tbody.innerHTML = "";
+
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="3">No transactions found.</td></tr>`;
+                    return;
+                }
+
+                data.forEach(tx => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>
+                            <span style="color: ${tx.category === 'Income' ? 'green' : 'red'};">
+                                ${tx.category === 'Income' ? '+' : ''}$${Math.abs(tx.amount)}
+                            </span>
+                        </td>
+                        <td>${tx.category}</td>
+                        <td>${tx.date}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (error) {
+                console.error("Failed to fetch transactions:", error);
             }
-
-            transactions.sort((a, b) => dateFilter === "latest" ? b.date - a.date : a.date - b.date);
-
-            rows.forEach(row => row.style.display = "none");
-            transactions.forEach(tx => tx.row.style.display = "table-row");
         }
+
+        async function fetchFilteredBudget() {
+            let selectedMonth = document.getElementById("filterBudgetMonth").value;
+            if (!selectedMonth) return;
+
+            let [year, month] = selectedMonth.split("-");
+
+            try {
+                let response = await fetch(`/budget/filter?year=${year}&month=${month}`);
+                let data = await response.json();
+
+                console.log("Fetched Budget Data:", data); 
+
+                let budgetList = document.getElementById("budgetList");
+                budgetList.innerHTML = "";
+
+                if (data.length === 0) {
+                    budgetList.innerHTML = `<tr><td colspan="4">No budget found.</td></tr>`;
+                    return;
+                }
+
+                data.forEach((budget) => {
+                    let tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${budget.category}</td>
+                        <td>$${Number(budget.budget).toFixed(2)}</td>
+                        <td>$${Number(budget.spent).toFixed(2)}</td>
+                        <td style="color: ${budget.remaining >= 0 ? 'green' : 'red'};">
+                            $${Number(budget.remaining).toFixed(2)}
+                        </td>
+                    `;
+                    budgetList.appendChild(tr);
+                });
+            } catch (error) {
+                console.error("Failed to fetch budget.", error);
+            }
+        }
+
+        window.onload = () => {
+            let today = new Date();
+            let thisMonth = today.toISOString().slice(0, 7);
+            
+            document.getElementById("filterMonth").value = thisMonth;
+            document.getElementById("filterBudgetMonth").value = thisMonth;
+
+            fetchFilteredTransactions();  
+            fetchFilteredBudget();      
+            fetchBudgetComparison();
+        };
+
+        document.getElementById("filterBudgetMonth").addEventListener("change", fetchFilteredBudget);
+
+
 
         function resetFilters() {
             document.getElementById("filterCategory").value = "";
             document.getElementById("filterDate").value = "latest";
             document.getElementById("filterMonth").value = "";
-            filterTable();
+            fetchFilteredTransactions();
         }
 
-        document.addEventListener("DOMContentLoaded", () => {
-            fetchBudgetComparison();
-            filterTable();
-        });
     </script>
 </head>
 <body>
@@ -92,7 +151,14 @@
                 </div>
                 <div class="form-control">
                     <label>Date</label>
-                    <input type="date" name="date" required />
+                    <input type="date" name="date" id="expenseDate" required />
+                    <!-- default to today's date -->
+                    <script>
+                        document.addEventListener("DOMContentLoaded", function () {
+                            let today = new Date().toISOString().split("T")[0];
+                            document.getElementById("expenseDate").value = today;
+                        });
+                        </script>
                 </div>
                 <button type="submit">Submit Expense</button>
             </form>
@@ -101,21 +167,28 @@
         <div class="tablecontainer">
             <div class="filtercontainer">
                 <label for="filterCategory">Category:</label>
-                <select id="filterCategory" onchange="filterTable()">
+                <select id="filterCategory" onchange="fetchFilteredTransactions()">
                     <option value="">All</option>
                     <% categories.forEach(category => { %>
                         <option value="<%= category.name %>"><%= category.name %></option>
                     <% }); %>
                 </select>
 
+                <label for="filterTimeframe">Timeframe:</label>
+                <select id="filterTimeframe" onchange="fetchFilteredTransactions()">
+                    <option value="">All Time</option>
+                    <option value="recent">Last 7 Days</option>
+                    <option value="month">This Month</option>
+                </select>
+
                 <label for="filterDate">Sort by Date:</label>
-                <select id="filterDate" onchange="filterTable()">
+                <select id="filterDate" onchange="fetchFilteredTransactions()">
                     <option value="latest">Latest First</option>
                     <option value="oldest">Oldest First</option>
                 </select>
 
                 <label for="filterMonth">Month/Year:</label>
-                <input type="month" id="filterMonth" onchange="filterTable()" />
+                <input type="month" id="filterMonth" onchange="fetchFilteredTransactions()" />
 
                 <button onclick="resetFilters()">Reset</button>
             </div>
@@ -128,7 +201,7 @@
                         <th>Date</th>
                     </tr>
                 </thead>
-                <tbody>
+                <!-- <tbody>
                     <% expenses.forEach(expense => { %>
                     <tr>
                         <td>
@@ -140,11 +213,15 @@
                         <td><%= expense.date %></td>
                     </tr>
                     <% }); %>
-                </tbody>
+                </tbody> -->
+                <tbody id="transactionsList">
+                    <!-- dynamically generasted with js -->
+                </tbody>                
             </table>
         </div>
     </div>
 
+    <div class="container">
     <div class="budget-container">
         <h2>TOTAL SUMMARY</h2>
         <p><strong>Total Income:</strong> <span id="totalIncome">$0</span></p>
@@ -153,7 +230,7 @@
         <p id="budgetMessage"></p>
     </div>
 
-		<div class="container">
+		<div class="expenseform">
 			<h1>Set Your Budget</h1>
 			<form action="/budget" method="POST">
 				<div class="form-control">
@@ -180,26 +257,28 @@
 			</form>
 		</div>
 	
-		<div class="container">
+		<div class="expenseform">
 			<h1>Budget Breakdown</h1>
-				<table>
-				<tr>
-					<th>Category</th>
-					<th>Budget</th>
-					<th>Spent</th>
-					<th>Remaining</th>
-				</tr>
-				<% budgets.forEach(budget => { %>
-					<tr>
-					<td><%= budget.category %></td>
-					<td><%= budget.amount %></td>
-					<td><%= budget.totalExpense %></td>
-					<td><%= budget.remainingBudget %></td>
-					</tr>
-				<% }); %>
-				</table>
+            <div class="filtercontainer">
+                <label for="filterBudgetMonth">Filter Budget by Month:</label>
+                <input type="month" id="filterBudgetMonth" onchange="fetchFilteredBudget()" />
+            </div>            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Budget</th>
+                        <th>Spent</th>
+                        <th>Remaining</th>
+                    </tr>
+                </thead>
+                <tbody id="budgetList">
+                    <!-- data dynamically generated with js -->
+                </tbody>
+            </table>
+            
 		  </div>
-		  
+		</div>  
 
 		</div>
 </body>
