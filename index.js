@@ -253,13 +253,19 @@ app.listen(port, () => {
 
 app.get("/budget/comparison", async (req, res) => {
 	try {
-		const incomeResult = await db.query(
-			"SELECT COALESCE(SUM(amount), 0) AS total_income FROM expenses WHERE amount > 0"
-		);
+		const incomeResult = await db.query(`
+		SELECT COALESCE(SUM(e.amount), 0) AS total_income
+		FROM expenses e
+		JOIN categories c ON e.category_id = c.id
+		WHERE c.name = 'Income'
+		`);
 
-		const expenseResult = await db.query(
-			"SELECT COALESCE(SUM(amount * -1), 0) AS total_expense FROM expenses WHERE amount < 0"
-		);
+		const expenseResult = await db.query(`
+			SELECT COALESCE(SUM(e.amount), 0) AS total_expense
+			FROM expenses e
+			JOIN categories c ON e.category_id = c.id
+			WHERE c.name != 'Income'
+		`);
 
 		console.log("Extracted Income:", incomeResult.rows[0]);
 		console.log("Extracted Expense:", expenseResult.rows[0]);
