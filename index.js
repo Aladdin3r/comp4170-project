@@ -20,11 +20,12 @@ app.get("/", async (req, res) => {
 		// Fetch expenses with categories joined
 		const expensesResult = await db.query(
 			`
-      SELECT expenses.id, expenses.amount, categories.name AS category, 
-      expenses.date FROM expenses 
-      JOIN categories ON expenses.category_id = categories.id 
-      ORDER BY date DESC
-      `
+			SELECT expenses.id, expenses.amount, categories.name AS category, 
+			expenses.date FROM expenses 
+			JOIN categories ON expenses.category_id = categories.id 
+			ORDER BY date DESC
+			LIMIT 10
+      		`
 		);
 
 		// Fetch budgets for each category and calculate remaining budget

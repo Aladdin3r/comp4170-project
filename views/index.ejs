@@ -27,7 +27,7 @@
             let category = document.getElementById("filterCategory").value;
             let order = document.getElementById("filterDate").value;
             let selectedMonth = document.getElementById("filterMonth").value;
-            let timeframe = document.getElementById("filterTimeframe").value;
+            let timeframe = document.getElementById("filterTimeframe").value
 
             let url = "/transactions/filter?";
 
@@ -112,6 +112,7 @@
             
             document.getElementById("filterMonth").value = thisMonth;
             document.getElementById("filterBudgetMonth").value = thisMonth;
+            document.getElementById("filterTimeframe").value = "recent";
 
             fetchFilteredTransactions();  
             fetchFilteredBudget();      
